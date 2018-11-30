@@ -113,7 +113,7 @@ impl InSaleAPIClient
 			None => {},
 			Some(&InSaleAuthenticationMethod::OAuth2TokenHeader(ref _token)) => {
 				// Adds the Authorization header
-				_builder.header("Authorization", "Token ".to_owned() + &_token);
+				_builder.header("Authorization", "Bearer ".to_owned() + &_token);
 			}
 		}
 
