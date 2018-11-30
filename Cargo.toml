@@ -1,0 +1,11 @@
+[package]
+name = "api_client"
+version = "0.1.0"
+authors = ["CugeDe <cugede.0x07ffff@gmail.com>"]
+
+[dependencies]
+base64 = "^0.10"
+bytes = "^0.4"
+http = "^0.1"
+hyper = "^0.12"
+hyper-tls = "^0.3"
