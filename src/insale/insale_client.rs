@@ -159,7 +159,7 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 		&self.endpoint
 	}
 
-	fn set_endpoint(&mut self, endpoint: &'static str)
+	fn set_endpoint(&mut self, endpoint: String)
 	-> Result<(), Self::Error>
 	{
 		self.endpoint = {

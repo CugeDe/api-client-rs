@@ -266,7 +266,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		&self.endpoint
 	}
 
-	fn set_endpoint(&mut self, endpoint: &'static str)
+	fn set_endpoint(&mut self, endpoint: String)
 	-> Result<(), Self::Error>
 	{
 		self.endpoint = {
@@ -438,13 +438,13 @@ mod tests
 	{
 		let mut _client = GithubAPIClient::new();
 
-		assert!(_client.set_endpoint("http://localhost/").is_ok());
+		assert!(_client.set_endpoint("http://localhost/".to_string()).is_ok());
 		assert_eq!(_client.endpoint().to_string(), String::from("http://localhost/"));
 
-		assert!(_client.set_endpoint("http://localhost/first/second/third?p1=v1&p2=v2").is_ok());
+		assert!(_client.set_endpoint("http://localhost/first/second/third?p1=v1&p2=v2".to_string()).is_ok());
 		assert_eq!(_client.endpoint().to_string(), String::from("http://localhost/"));
 
-		assert!(_client.set_endpoint("test:/localhost/").is_err());
+		assert!(_client.set_endpoint("test:/localhost/".to_string()).is_err());
 	}
 
 	#[test]
@@ -541,7 +541,7 @@ mod tests
 		let _thread_handle = start_test_server(3000);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3000/").expect("failed to set http://localhost:3000/ as new endpoint");
+		_client.set_endpoint("http://localhost:3000/".to_string()).expect("failed to set http://localhost:3000/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.get(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -593,7 +593,7 @@ mod tests
 		let _thread_handle = start_test_server(3001);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3001/").expect("failed to set http://localhost:3001/ as new endpoint");
+		_client.set_endpoint("http://localhost:3001/".to_string()).expect("failed to set http://localhost:3001/ as new endpoint");
 
 		let body = "";
 
@@ -647,7 +647,7 @@ mod tests
 		let _thread_handle = start_test_server(3002);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3002/").expect("failed to set http://localhost:3002/ as new endpoint");
+		_client.set_endpoint("http://localhost:3002/".to_string()).expect("failed to set http://localhost:3002/ as new endpoint");
 
 		let body = "";
 
@@ -701,7 +701,7 @@ mod tests
 		let _thread_handle = start_test_server(3003);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3003/").expect("failed to set http://localhost:3003/ as new endpoint");
+		_client.set_endpoint("http://localhost:3003/".to_string()).expect("failed to set http://localhost:3003/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.head(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -753,7 +753,7 @@ mod tests
 		let _thread_handle = start_test_server(3004);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3004/").expect("failed to set http://localhost:3004/ as new endpoint");
+		_client.set_endpoint("http://localhost:3004/".to_string()).expect("failed to set http://localhost:3004/ as new endpoint");
 
 		let body = "";
 
@@ -807,7 +807,7 @@ mod tests
 		let _thread_handle = start_test_server(3005);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3005/").expect("failed to set http://localhost:3005/ as new endpoint");
+		_client.set_endpoint("http://localhost:3005/".to_string()).expect("failed to set http://localhost:3005/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.option(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -859,7 +859,7 @@ mod tests
 		let _thread_handle = start_test_server(3007);
 
 		let mut _client = GithubAPIClient::new();
-		_client.set_endpoint("http://localhost:3007/").expect("failed to set http://localhost:3007/ as new endpoint");
+		_client.set_endpoint("http://localhost:3007/".to_string()).expect("failed to set http://localhost:3007/ as new endpoint");
 
 		let body = "";
 
