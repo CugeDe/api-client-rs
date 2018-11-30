@@ -11,38 +11,38 @@ pub const HTTPS_THREAD_COUNT: usize = 4usize;
 pub const GITHUB_API_ENDPOINT: &'static str = "https://api.github.com/";
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum GithubAuthenticationMethod<'a>
+pub enum GithubAuthenticationMethod
 {
 	/// Basic Authentication adds one header to the request
 	/// 'Authorization: Basic b64(username:password)'
 	/// 
 	/// # Example
 	/// `Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=`
-	Basic((&'a str, &'a str)),
+	Basic((String, String)),
 
 	/// OAuth2TokenHeader Authentication adds one header to the request
 	/// 'Authorization: Token OAUTH-TOKEN'
 	/// 
 	/// # Example
 	/// `Authorization: Token oauth-token`
-	OAuth2TokenHeader(&'a str),
+	OAuth2TokenHeader(String),
 
 	/// OAuth2TokenHeader Authentication adds one parameter to the request
 	/// 'access_token=OAUTH-TOKEN'
 	/// 
 	/// # Example
 	/// `https://api.github.com/?access_token=oauth-token`
-	OAuth2TokenParameter(&'a str),
+	OAuth2TokenParameter(String),
 
 	/// OAuth2KeySecret Authentication adds two parameters to the request
 	/// 'client_id=xxxx&client_secret=yyyy'
 	/// 
 	/// # Example
 	/// `https://api.github.com/users/whatever?client_id=xxxx&client_secret=yyyy`
-	OAuth2KeySecret((&'a str, &'a str))
+	OAuth2KeySecret((String, String))
 }
 
-impl<'a> GithubAuthenticationMethod<'a>
+impl GithubAuthenticationMethod
 {
 	pub fn as_str(&self)
 	-> &'static str
@@ -92,14 +92,14 @@ impl<'a> GithubAuthenticationMethod<'a>
 	}
 }
 
-pub struct GithubAPIClient<'a>
+pub struct GithubAPIClient
 {
-	authentication_method: Option<GithubAuthenticationMethod<'a>>,
+	authentication_method: Option<GithubAuthenticationMethod>,
 	endpoint: hyper::Uri,
 	_client: hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>
 }
 
-impl<'a> GithubAPIClient<'a>
+impl GithubAPIClient
 {
 	pub fn new()
 	-> Self
@@ -124,11 +124,11 @@ impl<'a> GithubAPIClient<'a>
 		}
 	}
 
-	fn setup_basic_authentication(&mut self, _basic_credentials: (&'a str, &'a str))
+	fn setup_basic_authentication(&mut self, _basic_credentials: (String, String))
 	-> Result<(), Error>
 	{
 		match _basic_credentials {
-			(_username, _password) if _username.len() == 0 || _password.len() == 0 => {
+			(ref _username, ref _password) if _username.len() == 0 || _password.len() == 0 => {
 				Err(Error::new(ErrorKind::InvalidData, "username nor password are null"))
 			},
 			(_username, _password) => {
@@ -138,7 +138,7 @@ impl<'a> GithubAPIClient<'a>
 		}
 	}
 
-	fn setup_oauth2_token_header_authentication(&mut self, _oauth2_token: &'a str) -> Result<(), Error>
+	fn setup_oauth2_token_header_authentication(&mut self, _oauth2_token: String) -> Result<(), Error>
 	{
 		if _oauth2_token.len() == 0 {
 			Err(Error::new(ErrorKind::InvalidData, "oauth2 token is null"))
@@ -149,7 +149,7 @@ impl<'a> GithubAPIClient<'a>
 		}
 	}
 
-	fn setup_oauth2_token_parameter_authentication(&mut self, _oauth2_token: &'a str)
+	fn setup_oauth2_token_parameter_authentication(&mut self, _oauth2_token: String)
 	-> Result<(), Error>
 	{
 		if _oauth2_token.len() == 0 {
@@ -161,11 +161,11 @@ impl<'a> GithubAPIClient<'a>
 		}
 	}
 
-	fn setup_oauth2_keysecret_authentication(&mut self, _oauth2_credentials: (&'a str, &'a str))
+	fn setup_oauth2_keysecret_authentication(&mut self, _oauth2_credentials: (String, String))
 	-> Result<(), Error>
 	{
 		match _oauth2_credentials {
-			(_client_id, _client_secret) if _client_id.len() == 0 || _client_secret.len() == 0 => {
+			(ref _client_id, ref _client_secret) if _client_id.len() == 0 || _client_secret.len() == 0 => {
 				Err(Error::new(ErrorKind::InvalidData, "client_id nor client_secret are null"))
 			},
 			(_client_id, _client_secret) => {
@@ -175,7 +175,7 @@ impl<'a> GithubAPIClient<'a>
 		}
 	}
 
-	pub fn setup_authentication_method(&mut self, _authentication_method: Option<GithubAuthenticationMethod<'a>>)
+	pub fn setup_authentication_method(&mut self, _authentication_method: Option<GithubAuthenticationMethod>)
 	-> Result<(), Error>
 	{
 		match _authentication_method {
@@ -188,12 +188,12 @@ impl<'a> GithubAPIClient<'a>
 	}
 
 	pub fn authentication_method(&self)
-	-> &Option<GithubAuthenticationMethod<'a>>
+	-> &Option<GithubAuthenticationMethod>
 	{
 		&self.authentication_method
 	}
 
-	fn authenticate_request(&self, _builder: &mut hyper::http::request::Builder, _path: &str, mut _query: HashMap<&str, &'a str>, _fragment: Option<&str>)
+	fn authenticate_request(&self, _builder: &mut hyper::http::request::Builder, _path: &str, mut _query: HashMap<&str, String>, _fragment: Option<&str>)
 	{
 		let _fragment: String = match _fragment {
 			Some(_fragment) => {
@@ -205,22 +205,22 @@ impl<'a> GithubAPIClient<'a>
 		match self.authentication_method.as_ref()
 		{
 			None => {},
-			Some(&GithubAuthenticationMethod::Basic((_username, _password))) => {
+			Some(&GithubAuthenticationMethod::Basic((ref _username, ref _password))) => {
 				// Adds the Authorization header
-				_builder.header("Authorization", "Basic ".to_owned() + &base64::encode(&((_username.to_owned() + ":") + _password)));
+				_builder.header("Authorization", "Basic ".to_owned() + &base64::encode(&((_username.to_owned() + ":") + &_password)));
 			},
-			Some(&GithubAuthenticationMethod::OAuth2TokenHeader(_token)) => {
+			Some(&GithubAuthenticationMethod::OAuth2TokenHeader(ref _token)) => {
 				// Adds the Authorization header
-				_builder.header("Authorization", "Token ".to_owned() + _token);
+				_builder.header("Authorization", "Token ".to_owned() + &_token);
 			},
-			Some(&GithubAuthenticationMethod::OAuth2TokenParameter(_token)) => {
+			Some(&GithubAuthenticationMethod::OAuth2TokenParameter(ref _token)) => {
 				// Adds the access_token parameter to the Url
-				_query.insert("access_token", _token);
+				_query.insert("access_token", _token.clone());
 			},
-			Some(&GithubAuthenticationMethod::OAuth2KeySecret((_client_id, _client_secret))) => {
+			Some(&GithubAuthenticationMethod::OAuth2KeySecret((ref _client_id, ref _client_secret))) => {
 				// Adds the client_id and client_secret parameters to the Url
-				_query.insert("client_id", _client_id);
-				_query.insert("client_secret", _client_secret);
+				_query.insert("client_id", _client_id.clone());
+				_query.insert("client_secret", _client_secret.clone());
 			}
 		}
 
@@ -256,7 +256,7 @@ impl<'a> GithubAPIClient<'a>
 	}
 }
 
-impl<'a> APIClient<'a> for GithubAPIClient<'a>
+impl<'a> APIClient<'a> for GithubAPIClient
 {
 	type Error = Error;
 
@@ -288,7 +288,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 	}
 
 
-	fn get(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>)
+	fn get(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -306,7 +306,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn post(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn post(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -322,7 +322,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn put(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn put(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -338,7 +338,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn head(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>)
+	fn head(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -356,7 +356,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn delete(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn delete(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -374,7 +374,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn option(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>)
+	fn option(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -392,7 +392,7 @@ impl<'a> APIClient<'a> for GithubAPIClient<'a>
 		Ok(self._client.request(request))
 	}
 
-	fn patch(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, &str>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn patch(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -453,19 +453,19 @@ mod tests
 		let mut _client = GithubAPIClient::new();
 		assert!(_client.authentication_method().is_none());
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username", "password"))));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username".to_string(), "password".to_string()))));
 		assert!(_client.authentication_method().is_some());
 		assert!(_client.authentication_method().as_ref().unwrap().is_basic());
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		assert!(_client.authentication_method().is_some());
 		assert!(_client.authentication_method().as_ref().unwrap().is_oauth2token_header());
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter("token".to_string())));
 		assert!(_client.authentication_method().is_some());
 		assert!(_client.authentication_method().as_ref().unwrap().is_oauth2token_parameter());
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id", "client_secret"))));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id".to_string(), "client_secret".to_string()))));
 		assert!(_client.authentication_method().is_some());
 		assert!(_client.authentication_method().as_ref().unwrap().is_oauth2keysecret());
 
@@ -474,31 +474,31 @@ mod tests
 	}
 
 
-	fn setup_basic_authentication<'a>(_client: &mut GithubAPIClient<'a>) {
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("", "")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username", "")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("", "password")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username", "password")))).is_ok());
+	fn setup_basic_authentication<'a>(_client: &mut GithubAPIClient) {
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("".to_string(), "".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username".to_string(), "".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("".to_string(), "password".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::Basic(("username".to_string(), "password".to_string())))).is_ok());
 	}
 
-	fn setup_oauth2_token_header_authentication<'a>(_client: &mut GithubAPIClient<'a>)
+	fn setup_oauth2_token_header_authentication(_client: &mut GithubAPIClient)
 	{
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader(""))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token"))).is_ok());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("".to_string()))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string()))).is_ok());
 	}
 
-	fn setup_oauth2_token_parameter_authentication<'a>(_client: &mut GithubAPIClient<'a>)
+	fn setup_oauth2_token_parameter_authentication(_client: &mut GithubAPIClient)
 	{
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter(""))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter("token"))).is_ok());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter("".to_string()))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenParameter("token".to_string()))).is_ok());
 	}
 
-	fn setup_oauth2_keysecret_authentication<'a>(_client: &mut GithubAPIClient<'a>)
+	fn setup_oauth2_keysecret_authentication(_client: &mut GithubAPIClient)
 	{
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("", "")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id", "")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("", "client_secret")))).is_err());
-		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id", "client_secret")))).is_ok());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("".to_string(), "".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id".to_string(), "".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("".to_string(), "client_secret".to_string())))).is_err());
+		assert!(_client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2KeySecret(("client_id".to_string(), "client_secret".to_string())))).is_ok());
 	}
 
 	#[test]
@@ -543,7 +543,7 @@ mod tests
 		let mut _client = GithubAPIClient::new();
 		_client.set_endpoint("http://localhost:3000/").expect("failed to set http://localhost:3000/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.get(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -597,7 +597,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.post(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -651,7 +651,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.put(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -703,7 +703,7 @@ mod tests
 		let mut _client = GithubAPIClient::new();
 		_client.set_endpoint("http://localhost:3003/").expect("failed to set http://localhost:3003/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.head(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -757,7 +757,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.delete(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -809,7 +809,7 @@ mod tests
 		let mut _client = GithubAPIClient::new();
 		_client.set_endpoint("http://localhost:3005/").expect("failed to set http://localhost:3005/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.option(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -863,7 +863,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(GithubAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.patch(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
