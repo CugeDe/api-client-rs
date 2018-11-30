@@ -10,17 +10,17 @@ pub const HTTPS_THREAD_COUNT: usize = 4usize;
 pub const INSALE_API_ENDPOINT: &'static str = "http://api.prod.insale.fr/";
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum InSaleAuthenticationMethod<'a>
+pub enum InSaleAuthenticationMethod
 {
 	/// OAuth2TokenHeader Authentication adds one header to the request
 	/// 'Authorization: Token OAUTH-TOKEN'
 	/// 
 	/// # Example
 	/// `Authorization: Token oauth-token`
-	OAuth2TokenHeader(&'a str),
+	OAuth2TokenHeader(String),
 }
 
-impl<'a> InSaleAuthenticationMethod<'a>
+impl InSaleAuthenticationMethod
 {
 	pub fn as_str(&self)
 	-> &'static str
@@ -41,14 +41,14 @@ impl<'a> InSaleAuthenticationMethod<'a>
 	}
 }
 
-pub struct InSaleAPIClient<'a>
+pub struct InSaleAPIClient
 {
-	authentication_method: Option<InSaleAuthenticationMethod<'a>>,
+	authentication_method: Option<InSaleAuthenticationMethod>,
 	endpoint: hyper::Uri,
 	_client: hyper::Client<hyper_tls::HttpsConnector<hyper::client::HttpConnector>>
 }
 
-impl<'a> InSaleAPIClient<'a>
+impl InSaleAPIClient
 {
 	pub fn new()
 	-> Self
@@ -73,7 +73,7 @@ impl<'a> InSaleAPIClient<'a>
 		}
 	}
 
-	fn setup_oauth2_token_header_authentication(&mut self, _oauth2_token: &'a str) -> Result<(), Error>
+	fn setup_oauth2_token_header_authentication(&mut self, _oauth2_token: String) -> Result<(), Error>
 	{
 		if _oauth2_token.len() == 0 {
 			Err(Error::new(ErrorKind::InvalidData, "oauth2 token is null"))
@@ -84,7 +84,7 @@ impl<'a> InSaleAPIClient<'a>
 		}
 	}
 
-	pub fn setup_authentication_method(&mut self, _authentication_method: Option<InSaleAuthenticationMethod<'a>>)
+	pub fn setup_authentication_method(&mut self, _authentication_method: Option<InSaleAuthenticationMethod>)
 	-> Result<(), Error>
 	{
 		match _authentication_method {
@@ -94,7 +94,7 @@ impl<'a> InSaleAPIClient<'a>
 	}
 
 	pub fn authentication_method(&self)
-	-> &Option<InSaleAuthenticationMethod<'a>>
+	-> &Option<InSaleAuthenticationMethod>
 	{
 		&self.authentication_method
 	}
@@ -111,9 +111,9 @@ impl<'a> InSaleAPIClient<'a>
 		match self.authentication_method.as_ref()
 		{
 			None => {},
-			Some(&InSaleAuthenticationMethod::OAuth2TokenHeader(_token)) => {
+			Some(&InSaleAuthenticationMethod::OAuth2TokenHeader(ref _token)) => {
 				// Adds the Authorization header
-				_builder.header("Authorization", "Token ".to_owned() + _token);
+				_builder.header("Authorization", "Token ".to_owned() + &_token);
 			}
 		}
 
@@ -149,7 +149,7 @@ impl<'a> InSaleAPIClient<'a>
 	}
 }
 
-impl<'a> APIClient<'a> for InSaleAPIClient<'a>
+impl<'a> APIClient<'a> for InSaleAPIClient
 {
 	type Error = Error;
 
@@ -346,7 +346,7 @@ mod tests
 		let mut _client = InSaleAPIClient::new();
 		assert!(_client.authentication_method().is_none());
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		assert!(_client.authentication_method().is_some());
 		assert!(_client.authentication_method().as_ref().unwrap().is_oauth2token_header());
 
@@ -354,10 +354,10 @@ mod tests
 		assert!(_client.authentication_method().is_none());
 	}
 
-	fn setup_oauth2_token_header_authentication<'a>(_client: &mut InSaleAPIClient<'a>)
+	fn setup_oauth2_token_header_authentication<'a>(_client: &mut InSaleAPIClient)
 	{
-		assert!(_client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader(""))).is_err());
-		assert!(_client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token"))).is_ok());
+		assert!(_client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("".to_string()))).is_err());
+		assert!(_client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string()))).is_ok());
 	}
 
 	#[test]
@@ -399,7 +399,7 @@ mod tests
 		let mut _client = InSaleAPIClient::new();
 		_client.set_endpoint("http://localhost:4000/").expect("failed to set http://localhost:4000/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.get(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -453,7 +453,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.post(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -507,7 +507,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.put(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -559,7 +559,7 @@ mod tests
 		let mut _client = InSaleAPIClient::new();
 		_client.set_endpoint("http://localhost:4003/").expect("failed to set http://localhost:4003/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.head(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -613,7 +613,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.delete(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -665,7 +665,7 @@ mod tests
 		let mut _client = InSaleAPIClient::new();
 		_client.set_endpoint("http://localhost:4005/").expect("failed to set http://localhost:4005/ as new endpoint");
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.option(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
@@ -719,7 +719,7 @@ mod tests
 
 		let body = "";
 
-		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token")));
+		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.patch(HashMap::new(), "/", HashMap::new(), Some("test"), body).unwrap();
 
 		let responses: Arc<Mutex<Vec<Result<http::Response<String>, Error>>>> = Arc::new(Mutex::new(vec!()));
