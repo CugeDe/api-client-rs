@@ -288,7 +288,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 	}
 
 
-	fn get(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
+	fn get(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -306,7 +306,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn post(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn post(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -322,7 +322,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn put(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn put(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -338,7 +338,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn head(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
+	fn head(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -356,7 +356,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn delete(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn delete(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -374,7 +374,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn option(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
+	fn option(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
@@ -392,7 +392,7 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		Ok(self._client.request(request))
 	}
 
-	fn patch(&mut self, _headers: HashMap<&str, &str>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
+	fn patch(&mut self, _headers: HashMap<&str, String>, _path: &str, _query: HashMap<&str, String>, _fragment: Option<&str>, _body: impl Into<hyper::Body>)
 	-> Result<hyper::client::ResponseFuture, Self::Error>
 	{
 		let mut builder = hyper::Request::builder();
