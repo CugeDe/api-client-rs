@@ -1,5 +1,5 @@
 [package]
-name = "api_client"
+name = "api-client"
 version = "0.1.0"
 authors = ["CugeDe <cugede.0x07ffff@gmail.com>"]
 
