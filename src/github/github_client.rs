@@ -296,7 +296,9 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		builder.method("GET");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -314,6 +316,12 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		builder.method("POST");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
+
+		// Prepares the body
+
 		let request = match builder.body(_body.into()) {
 			Ok(request) => { request },
 			Err(error) => { return Err(Error::new(ErrorKind::Other, error)) }
@@ -329,6 +337,12 @@ impl<'a> APIClient<'a> for GithubAPIClient
 
 		builder.method("PUT");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
+
+		// Prepares the body
 
 		let request = match builder.body(_body.into()) {
 			Ok(request) => request,
@@ -346,7 +360,9 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		builder.method("HEAD");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -363,6 +379,10 @@ impl<'a> APIClient<'a> for GithubAPIClient
 
 		builder.method("DELETE");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		// Prepares the body
 
@@ -382,7 +402,9 @@ impl<'a> APIClient<'a> for GithubAPIClient
 		builder.method("OPTION");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -399,6 +421,10 @@ impl<'a> APIClient<'a> for GithubAPIClient
 
 		builder.method("PATCH");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		// Prepares the body
 

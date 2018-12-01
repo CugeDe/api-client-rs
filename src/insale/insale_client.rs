@@ -189,7 +189,9 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 		builder.method("GET");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -207,6 +209,12 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 		builder.method("POST");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
+
+		// Prepares the body		
+
 		let request = match builder.body(_body.into()) {
 			Ok(request) => { request },
 			Err(error) => { return Err(Error::new(ErrorKind::Other, error)) }
@@ -222,6 +230,12 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 
 		builder.method("PUT");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
+
+		// Prepares the body
 
 		let request = match builder.body(_body.into()) {
 			Ok(request) => request,
@@ -239,7 +253,9 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 		builder.method("HEAD");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -256,6 +272,10 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 
 		builder.method("DELETE");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		// Prepares the body
 
@@ -275,7 +295,9 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 		builder.method("OPTION");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
 
-		// Prepares the body
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		let request = match builder.body("".into()) {
 			Ok(request) => request,
@@ -292,6 +314,10 @@ impl<'a> APIClient<'a> for InSaleAPIClient
 
 		builder.method("PATCH");
 		self.authenticate_request(&mut builder, _path, _query, _fragment);
+
+		for (key, value) in _headers.iter() {
+			builder.header(*key, value.clone());
+		}
 
 		// Prepares the body
 
@@ -331,13 +357,13 @@ mod tests
 	{
 		let mut _client = InSaleAPIClient::new();
 
-		assert!(_client.set_endpoint("http://localhost/").is_ok());
+		assert!(_client.set_endpoint("http://localhost/".to_string()).is_ok());
 		assert_eq!(_client.endpoint().to_string(), String::from("http://localhost/"));
 
-		assert!(_client.set_endpoint("http://localhost/first/second/third?p1=v1&p2=v2").is_ok());
+		assert!(_client.set_endpoint("http://localhost/first/second/third?p1=v1&p2=v2".to_string()).is_ok());
 		assert_eq!(_client.endpoint().to_string(), String::from("http://localhost/"));
 
-		assert!(_client.set_endpoint("test:/localhost/").is_err());
+		assert!(_client.set_endpoint("test:/localhost/".to_string()).is_err());
 	}
 
 	#[test]
@@ -397,7 +423,7 @@ mod tests
 		let _thread_handle = start_test_server(4000);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4000/").expect("failed to set http://localhost:4000/ as new endpoint");
+		_client.set_endpoint("http://localhost:4000/".to_string()).expect("failed to set http://localhost:4000/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.get(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -449,7 +475,7 @@ mod tests
 		let _thread_handle = start_test_server(4001);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4001/").expect("failed to set http://localhost:4001/ as new endpoint");
+		_client.set_endpoint("http://localhost:4001/".to_string()).expect("failed to set http://localhost:4001/ as new endpoint");
 
 		let body = "";
 
@@ -503,7 +529,7 @@ mod tests
 		let _thread_handle = start_test_server(4002);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4002/").expect("failed to set http://localhost:4002/ as new endpoint");
+		_client.set_endpoint("http://localhost:4002/".to_string()).expect("failed to set http://localhost:4002/ as new endpoint");
 
 		let body = "";
 
@@ -557,7 +583,7 @@ mod tests
 		let _thread_handle = start_test_server(4003);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4003/").expect("failed to set http://localhost:4003/ as new endpoint");
+		_client.set_endpoint("http://localhost:4003/".to_string()).expect("failed to set http://localhost:4003/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.head(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -609,7 +635,7 @@ mod tests
 		let _thread_handle = start_test_server(4004);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4004/").expect("failed to set http://localhost:4004/ as new endpoint");
+		_client.set_endpoint("http://localhost:4004/".to_string()).expect("failed to set http://localhost:4004/ as new endpoint");
 
 		let body = "";
 
@@ -663,7 +689,7 @@ mod tests
 		let _thread_handle = start_test_server(4005);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4005/").expect("failed to set http://localhost:4005/ as new endpoint");
+		_client.set_endpoint("http://localhost:4005/".to_string()).expect("failed to set http://localhost:4005/ as new endpoint");
 
 		let _ = _client.setup_authentication_method(Some(InSaleAuthenticationMethod::OAuth2TokenHeader("token".to_string())));
 		let future = _client.option(HashMap::new(), "/", HashMap::new(), Some("test")).unwrap();
@@ -715,7 +741,7 @@ mod tests
 		let _thread_handle = start_test_server(4007);
 
 		let mut _client = InSaleAPIClient::new();
-		_client.set_endpoint("http://localhost:4007/").expect("failed to set http://localhost:4007/ as new endpoint");
+		_client.set_endpoint("http://localhost:4007/".to_string()).expect("failed to set http://localhost:4007/ as new endpoint");
 
 		let body = "";
 
